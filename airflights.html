@@ -318,6 +318,7 @@
                             const modal = bootstrap.Modal.getInstance(document.getElementById("flightModal"));
                             modal.hide();
                             form.reset();
+                            alert("Flight reservation has been created.");
                         })
                         .catch(error => console.error("Error adding flight:", error));
                 }

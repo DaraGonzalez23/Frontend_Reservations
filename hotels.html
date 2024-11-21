@@ -323,6 +323,7 @@
                             const modal = bootstrap.Modal.getInstance(document.getElementById("hotelModal"));
                             modal.hide();
                             form.reset();
+                            alert("Hotel reservation has been created.");
                         })
                         .catch(error => console.error("Error adding hotel reservation:", error));
                 }
