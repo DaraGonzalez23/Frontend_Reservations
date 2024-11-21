@@ -116,6 +116,48 @@
     <!-- Flight Table -->
     <div id="flightsTableContainer" class="container mt-4" style="display: none;">
         <h2 class="mb-3">Your Flights</h2>
+
+        <div class="row">
+            <div class="col-lg-6"></div>
+            <div class="col-lg-6">
+                <div class="input-group mb-3">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">Filter</button>
+
+                    <div class="dropdown-menu container">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="radioCityOriginName" id="radioCityOrigin" onclick="pressRadioFilter('radioCityOrigin')">
+                            <label class="form-check-label" for="radioCityOrigin">
+                                City Origin
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="radioCityDestinationName" id="radioCityDestination" onclick="pressRadioFilter('radioCityDestination')">
+                            <label class="form-check-label" for="radioCityDestination">
+                                City Destination
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="radioDepartureDateTimeName" id="radioDepartureDateTime" onclick="pressRadioFilter('radioDepartureDateTime')">
+                            <label class="form-check-label" for="radioDepartureDateTime">
+                                Departure Date Time
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="radioPriceName" id="radioPrice" onclick="pressRadioFilter('radioPrice')">
+                            <label class="form-check-label" for="radioPrice">
+                                Price
+                            </label>
+                        </div>
+                    </div>
+
+                    <input type="text" class="form-control" placeholder="Insert the City Origin"
+                        aria-label="Recipient's username" aria-describedby="button-addon2">
+                    <button class="btn btn-outline-secondary" type="button" id="button-addon2">Search</button>
+                </div>
+            </div>
+        </div>
+
         <table id="flightsTable" class="table table-striped">
             <thead>
                 <tr>
@@ -197,7 +239,7 @@
         }
 
         function fillFlightsTable() {
-            console.log("Airflight reservations fill",flightReservations)
+            console.log("Airflight reservations fill", flightReservations)
             if (flightReservations.length >= 0) {
                 flightTableBody.innerHTML = "";
                 flightReservations.forEach((airflight, index) => {
@@ -270,7 +312,7 @@
                     alert("Departure Date is required.");
                     return;
                 }
-                
+
                 if (flightPrice <= 0 || isNaN(flightPrice)) {
                     alert("Price must be a positive number greater than zero.");
                     return;
@@ -349,6 +391,35 @@
                 })
                 .catch(error => console.error("Error deleting flight:", error));
         }
+
+        function pressRadioFilter(radioParameter){
+            switch(radioParameter){
+                case "radioCityOrigin":
+                    alert("Diste click en el filtro de City Origin");
+                    fetch("http://localhost:" + customPorts.ports.airflights + "/api/flights/citiesOrigin/"+document.getElementById("radioCityOrigin")+"")
+                .then(response => response.json())
+                .then(data => {
+                    console.log("data",data);
+                })
+                .catch(error => console.error(error));
+                    break;
+                case "radioCityDestination":
+                    alert("Diste click en el filtro de City Destination");
+                    break;
+                case "radioDepartureDateTime":
+                    alert("Diste click en el filtro de Departure Date Time");
+                    break;
+                case "radioPrice":
+                    alert("Diste click en el filtro de Price");
+                    break;
+                default:
+                    alert("Default");
+                    break;
+            }
+        }
+
+
+
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
