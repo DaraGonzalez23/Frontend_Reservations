@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservations - Hotels</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+
+        .navbar-custom {
+            background-color: #6c63ff;
+            padding: 15px 10px;
+        }
+
+        .navbar-custom .nav-link {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+
+        .navbar-custom .nav-link:hover {
+            background-color: #5a54d1;
+        }
+
+        .btn-main {
+            background-color: #6c63ff;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+        }
+
+        .btn-main:hover {
+            background-color: #5a54d1;
+        }
+
+        .btn-edit {
+            background-color: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            border: none;
+        }
+
+        .btn-edit:hover {
+            background-color: #218838;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            border: none;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .table thead {
+            background-color: #6c63ff;
+            color: white;
+        }
+
+        .img-banner {
+            max-width: 300px;
+            margin: 20px auto;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">Home</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="hotels.html">Hotels</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="airflights.html">Flights</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4 text-center">
+        <img src="./istockphoto-1146556068-612x612.jpg" alt="Reservation" class="img-fluid mb-4"
+            style="max-width: 300px;">
+        <h1>Welcome to Hotel Reservations</h1>
+        <p>Plan your perfect stay! Add your reservations effortlessly or explore your existing bookings.</p>
+        <button class="btn btn-main" data-bs-toggle="modal" data-bs-target="#hotelModal">Add Reservation</button>
+    </div>
+
+    <!-- Reservation Table -->
+    <div id="reservationsTableContainer" class="container mt-4" style="display: none;">
+        <h2 class="mb-3">Your Reservations</h2>
+        <table id="reservationsTable" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name Hotel</th>
+                    <th>Location</th>
+                    <th>Price</th>
+                    <th>Check In</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamic rows will be appended here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal for Adding and Editing Reservation -->
+    <div class="modal fade" id="hotelModal" tabindex="-1" aria-labelledby="hotelModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="hotelModalLabel">Add Hotel Reservation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="hotelForm">
+                        <div class="mb-3">
+                            <label for="hotelName" class="form-label">Hotel Name</label>
+                            <input type="text" class="form-control" id="hotelName" required pattern="[A-Za-z\s]+"
+                                title="Hotel Name must contain only letters.">
+                        </div>
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="location" required pattern="[A-Za-z\s]+"
+                                title="Location must contain only letters.">
+                        </div>
+                        <div class="mb-3">
+                            <label for="checkIn" class="form-label">Check In</label>
+                            <input type="datetime-local" class="form-control" id="checkIn" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Price</label>
+                            <input type="number" class="form-control" id="price" min="1"
+                                title="Price must be a positive number greater than zero." required>
+                        </div>
+                        <input type="hidden" id="editIndex">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="saveHotel()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="ports.js"></script>
+
+    <script>
+        let hotelReservations = [];
+        const hotelTableBody = document.querySelector("#reservationsTable tbody");
+
+        getHotels();
+        function getHotels() {
+            fetch("http://localhost:" + customPorts.ports.hotels + "/api/hotels/getHotels")
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Datos recibidos del API:", data); // Verifica el contenido aquí
+                    hotelReservations = data;
+                    if (!hotelReservations || hotelReservations.length === 0) {
+                        alert("No reservations available.");
+                        document.getElementById("reservationsTableContainer").style.display = "none";
+                        return;
+                    }
+                    fillHotelsTable();
+                    document.getElementById("reservationsTableContainer").style.display = "block";
+                })
+                .catch(error => {
+                    console.error("Error fetching hotels:", error);
+                    alert("There was an error retrieving the hotel reservations.");
+                })
+        };
+
+        function fillHotelsTable() {
+            console.log("Filling hotels table with:", hotelReservations);
+            hotelTableBody.innerHTML = "";
+
+            hotelReservations.forEach((hotel, index) => {
+
+                if (!hotel.hotelName || !hotel.location || !hotel.checkIn || !hotel.price) {
+                    console.warn("Datos incompletos para la reserva:", hotel);
+                    return; // Salta entradas incompletas
+                }
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                        <td>${hotel.hotelName}</td>
+                        <td>${hotel.location}</td>
+                        <td>${new Date(hotel.checkIn).toLocaleString()}</td> <!-- Formato legible -->
+                        <td>${hotel.price}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" onclick="editHotel(${index})">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteHotel(${hotel.id})">Cancel</button>
+                        </td>
+                    `;
+                hotelTableBody.appendChild(row);
+            });
+        }
+
+        function showReservations() {
+            const tableBody = document.querySelector("#reservationsTable tbody");
+            tableBody.innerHTML = "";
+
+            if (hotelReservations.length === 0) {
+                alert("No reservations available.");
+                return;
+            }
+
+            hotelReservations.forEach((reservation, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${reservation.hotelName}</td>
+                    <td>${reservation.location}</td>
+                    <td>${reservation.price}</td>
+                    <td>${reservation.checkIn}</td>
+                    <td>
+                        <button class="btn btn-edit" onclick="editHotel(${index})">Edit</button>
+                        <button class="btn btn-delete" onclick="deleteHotel(${index})">Cancel</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            document.getElementById("reservationsTableContainer").style.display = "block";
+        }
+
+        function saveHotel() {
+            const form = document.getElementById("hotelForm");
+
+            if (form.checkValidity()) {
+                const hotelName = document.getElementById("hotelName").value.trim();
+                const location = document.getElementById("location").value.trim();
+                const price = document.getElementById("price").value.trim();
+                const checkIn = document.getElementById("checkIn").value.trim();
+                const editIndex = document.getElementById("editIndex").value;
+
+                if (!hotelName.match(/^[A-Za-z\s]+$/)) {
+                    alert("Hotel Name must contain only letters.");
+                    return;
+                }
+
+                if (!location.match(/^[A-Za-z\s]+$/)) {
+                    alert("Location must contain only letters.");
+                    return;
+                }
+
+                if (!checkIn) {
+                    alert("Check-In date is required.");
+                    return;
+                }
+
+                if (price <= 0 || isNaN(price)) {
+                    alert("Price must be a positive number.");
+                    return;
+                }
+
+                const reservation = {
+                    hotelName,
+                    location,
+                    checkIn,
+                    price: parseFloat(price),
+                };
+
+                if (editIndex !== "") {
+                    fetch("http://localhost:" + customPorts.ports.hotels + "/api/hotels/" + hotelReservations[editIndex].id + "", {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(reservation),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Hotel reservation updated successfully", data);
+                            hotelReservations[editIndex] = { id: hotelReservations[editIndex].id, ...reservation };
+                            fillHotelsTable();
+                            const modal = bootstrap.Modal.getInstance(document.getElementById("hotelModal"));
+                            modal.hide();
+                            form.reset();
+                            document.getElementById("editHotelIndex").value = "";
+                        })
+                        .catch(error => console.error("Error updating hotel reservation:", error));
+                } else {
+                    fetch("http://localhost:" + customPorts.ports.hotels + "/api/hotels/create", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(reservation),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Hotel reservation added successfully", data);
+                            hotelReservations.push(data);
+                            fillHotelsTable();
+                            const modal = bootstrap.Modal.getInstance(document.getElementById("hotelModal"));
+                            modal.hide();
+                            form.reset();
+                        })
+                        .catch(error => console.error("Error adding hotel reservation:", error));
+                }
+            } else {
+                form.reportValidity();
+            }
+        }
+
+        function editHotel(index) {
+            const reservation = hotelReservations[index];
+            document.getElementById("hotelName").value = reservation.hotelName;
+            document.getElementById("location").value = reservation.location;
+            document.getElementById("price").value = reservation.price;
+            document.getElementById("checkIn").value = reservation.checkIn;
+            document.getElementById("editIndex").value = index;
+
+            const modal = new bootstrap.Modal(document.getElementById("hotelModal"));
+            modal.show();
+        }
+
+        function deleteHotel(idHotel) {
+            fetch("http://localhost:" + customPorts.ports.hotels + "/api/hotels/" + idHotel + "", {
+                method: "DELETE",
+            })
+                .then(() => {
+                    alert("The hotel reservation has been deleted successfully");
+                    getHotels();
+                })
+                .catch(error => console.error("Error deleting hotel reservation:", error));
+        }
+
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
