@@ -1,6 +1,6 @@
 const customPorts = {
     "ports": {
-        "airflights": 51203,
-        "hotels": 51273
+        "airflights": 51644,
+        "hotels": 51670
     } 
 }

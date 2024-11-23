@@ -126,25 +126,29 @@
 
                     <div class="dropdown-menu container">
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="radioCityOriginName" id="radioCityOrigin" onclick="pressRadioFilter('radioCityOrigin')">
+                            <input class="form-check-input" type="radio" name="radioCityOriginName" id="radioCityOrigin"
+                                onclick="pressRadioFilter('radioCityOrigin')">
                             <label class="form-check-label" for="radioCityOrigin">
                                 City Origin
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="radioCityDestinationName" id="radioCityDestination" onclick="pressRadioFilter('radioCityDestination')">
+                            <input class="form-check-input" type="radio" name="radioCityDestinationName"
+                                id="radioCityDestination" onclick="pressRadioFilter('radioCityDestination')">
                             <label class="form-check-label" for="radioCityDestination">
                                 City Destination
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="radioDepartureDateTimeName" id="radioDepartureDateTime" onclick="pressRadioFilter('radioDepartureDateTime')">
+                            <input class="form-check-input" type="radio" name="radioDepartureDateTimeName"
+                                id="radioDepartureDateTime" onclick="pressRadioFilter('radioDepartureDateTime')">
                             <label class="form-check-label" for="radioDepartureDateTime">
                                 Departure Date Time
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="radioPriceName" id="radioPrice" onclick="pressRadioFilter('radioPrice')">
+                            <input class="form-check-input" type="radio" name="radioPriceName" id="radioPrice"
+                                onclick="pressRadioFilter('radioPrice')">
                             <label class="form-check-label" for="radioPrice">
                                 Price
                             </label>
@@ -153,7 +157,9 @@
 
                     <input type="text" class="form-control" placeholder="Insert the City Origin"
                         aria-label="Recipient's username" aria-describedby="button-addon2">
-                    <button class="btn btn-outline-secondary" type="button" id="button-addon2">Search</button>
+                    <button class="btn btn-outline-secondary" type="button" id="button-addon2"
+                        onclick="searchFlights()">Search</button>
+
                 </div>
             </div>
         </div>
@@ -392,8 +398,8 @@
                 .catch(error => console.error("Error deleting flight:", error));
         }
 
-        function pressRadioFilter(radioParameter){
-            switch(radioParameter){
+        function pressRadioFilter(radioParameter) {
+            /*switch(radioParameter){
                 case "radioCityOrigin":
                     alert("Diste click en el filtro de City Origin");
                     fetch("http://localhost:" + customPorts.ports.airflights + "/api/flights/citiesOrigin/"+document.getElementById("radioCityOrigin")+"")
@@ -405,20 +411,84 @@
                     break;
                 case "radioCityDestination":
                     alert("Diste click en el filtro de City Destination");
+                    fetch("http://localhost:" + customPorts.ports.airflights + "/api/flights/citiesDestination/"+document.getElementById("radioCityDestination")+"")
+                .then(response => response.json())
+                .then(data => {
+                    console.log("data",data);
+                })
                     break;
                 case "radioDepartureDateTime":
                     alert("Diste click en el filtro de Departure Date Time");
+                    fetch("http://localhost:" + customPorts.ports.airflights + "/api/flights/departuresTime/"+document.getElementById("radioDepartureDateTime")+"")
+                .then(response => response.json())
+                .then(data => {
+                    console.log("data",data);
+                })
                     break;
                 case "radioPrice":
                     alert("Diste click en el filtro de Price");
+                    fetch("http://localhost:" + customPorts.ports.airflights + "/api/flights/prices/"+document.getElementById("radioPrice")+"")
+                .then(response => response.json())
+                .then(data => {
+                    console.log("data",data);
+                })
                     break;
                 default:
                     alert("Default");
                     break;
-            }
+        }*/
         }
+        function searchFlights() {
+            const selectedFilter = document.querySelector('input[name="radioCityOriginName"]:checked, input[name="radioCityDestinationName"]:checked, input[name="radioDepartureDateTimeName"]:checked, input[name="radioPriceName"]:checked');
+            const filterValue = document.querySelector('.form-control').value;
 
+            if (!selectedFilter) {
+                alert('Please select a filter option before searching.');
+                return;
+            }
 
+            if (!filterValue) {
+                alert('Please enter a value to search.');
+                return;
+            }
+
+            const filterType = selectedFilter.id; // Obtiene el ID del filtro seleccionado
+            let apiUrl = "";
+
+            // Configura el endpoint de la API según el filtro seleccionado
+            switch (filterType) {
+                case "radioCityOrigin":
+                    apiUrl = `http://localhost:${customPorts.ports.airflights}/api/flights/citiesOrigin/${filterValue}`;
+                    break;
+                case "radioCityDestination":
+                    apiUrl = `http://localhost:${customPorts.ports.airflights}/api/flights/citiesDestination/${filterValue}`;
+                    break;
+                case "radioDepartureDateTime":
+                    apiUrl = `http://localhost:${customPorts.ports.airflights}/api/flights/departuresTime/${filterValue}`;
+                    break;
+                case "radioPrice":
+                    apiUrl = `http://localhost:${customPorts.ports.airflights}/api/flights/prices/${filterValue}`;
+                    break;
+                default:
+                    alert('Unknown filter type.');
+                    return;
+            }
+
+            // Llamada a la API para obtener los datos filtrados
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        alert("No flights found for the selected filter.");
+                    } else {
+                        console.log("Filtered flights:", data);
+                        //displayFilteredFlights(data); // Función para mostrar los resultados filtrados en la tabla
+                        flightReservations = data;
+                        fillFlightsTable();
+                    }
+                })
+                .catch(error => console.error("Error fetching flights:", error));
+        }
 
     </script>
 
